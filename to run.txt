@@ -1,0 +1,8 @@
+open a terminal and split 
+terminal 1 --> to run server 
+		cd server
+		nodemon
+terminal 2 --> to run frontend
+		cd Frontend
+		npm run dev
+		ctrl + click to open it in the browser.
