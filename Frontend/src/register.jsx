@@ -108,15 +108,7 @@ const Register = () => {
             onChange={handleChange}
           />
 
-          {/* <label className="register-label" htmlFor="phone">Phone (Optional)</label>
-          <input
-            className="register-input"
-            type="tel"
-            id="phone"
-            placeholder="Phone Number"
-            value={form.phone}
-            onChange={handleChange}
-          /> */}
+       
 
           <div className="register-label" style={{ marginBottom: '0.5rem' }}>User Type</div>
           <div style={{ marginBottom: '1.2rem' }}>
