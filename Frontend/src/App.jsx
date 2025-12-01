@@ -2,7 +2,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, AuthContext } from './AuthContext';
 import React, { useContext } from 'react';
-import Login from './Login';
+import Login from './login';
 import Register from './register';
 import OwnerDashboard from './OwnerDashboard';
 import TenantDashboard from './TenantDashboard';
