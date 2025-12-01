@@ -15,10 +15,8 @@
     "jspdf": "^3.0.1",
     "jspdf-autotable": "^5.0.2",
     "localtunnel": "^2.0.2",
-    "qrcode.react": "^4.2.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "react-qr-reader": "^3.0.0-beta-1",
     "react-router-dom": "^7.9.3"
   },
   "devDependencies": {
