@@ -16,7 +16,7 @@ app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 // Middleware
 app.use(cors());
-app.use(cors({ origin: 'https://your-frontend.vercel.app' }));
+app.use(cors({ origin: 'https://rent-calc-full.vercel.app/login' }));
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ extended: true }));
 
