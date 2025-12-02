@@ -39,6 +39,9 @@ const Register = () => {
     }
 
     try {
+      // ✅ Use the environment variable for the API base URL
+      const API_URL = import.meta.env.VITE_API_URL;
+
       const payload = {
         name: form.name,
         email: form.email || undefined,
@@ -51,11 +54,18 @@ const Register = () => {
         payload.ownerCode = form.ownerCode;
       }
 
-      const res = await axios.post('http://localhost:5000/api/users', payload);
-      alert(`Registration successful! ${userType === 'owner' ? 'Your owner code: ' + res.data.owner_code : ''}`);
+      // ✅ Fixed: Now points to your live backend on Render
+      const res = await axios.post(`${API_URL}/api/users`, payload);
+
+      if (userType === 'owner') {
+        alert(`Registration successful! Your owner code: ${res.data.owner_code}`);
+      } else {
+        alert('Registration successful!');
+      }
+
       navigate('/login');
     } catch (err) {
-      const msg = err.response?.data?.error || 'Registration failed';
+      const msg = err.response?.data?.error || 'Registration failed. Please try again.';
       alert(msg);
     }
   };
@@ -107,8 +117,6 @@ const Register = () => {
             value={form.email}
             onChange={handleChange}
           />
-
-       
 
           <div className="register-label" style={{ marginBottom: '0.5rem' }}>User Type</div>
           <div style={{ marginBottom: '1.2rem' }}>
