@@ -11,14 +11,22 @@ const fs = require("fs");
 
 const app = express();
 const PORT = process.env.PORT || 5000;  // use Render's port if available
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 
 // Middleware
-app.use(cors());
-app.use(cors({ origin: 'https://rent-calc-full.vercel.app/login' }));
 app.use(bodyParser.json({ limit: '10mb' }));
 app.use(bodyParser.urlencoded({ extended: true }));
+
+const corsOptions = {
+  origin: [
+    'https://rent-calc-full.vercel.app', // ✅ Your live Vercel URL
+    'http://localhost:5173'             // ✅ Vite dev server (port may vary)
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type']
+};
+app.use(cors(corsOptions));
+
 
 // Serve static files (for QR images)
 const uploadDir = path.join(__dirname, "public/uploads");
@@ -443,7 +451,6 @@ app.delete("/api/notifications/:id", (req, res) => {
   });
 });
 
-// Start server
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
