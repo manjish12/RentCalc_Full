@@ -8,6 +8,7 @@ const bcrypt = require('bcrypt');
 const SALT_ROUNDS = 10;
 
 const fs = require("fs");
+const { Server } = require("http");
 
 const app = express();
 const PORT = process.env.PORT || 5000;  // use Render's port if available
@@ -28,10 +29,12 @@ if (!fs.existsSync(uploadDir)) {
 app.use("/uploads", express.static(uploadDir));
 
 // Initialize DB and recreate tables on every startup (for development)
+const dbPath = path.join(Server, 'rentcalc.db');
 const db = new sqlite3.Database("./rentcalc.db", (err) => {
   if (err) console.error("DB error:", err);
   else console.log("Connected to DB");
 });
+
 
 // Recreate tables with full schema
 db.serialize(() => {
