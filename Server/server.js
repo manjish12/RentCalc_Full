@@ -1,6 +1,6 @@
 // server.js
 const express = require("express");
-const sqlite3 = require("sqlite3").verbose();
+const Database = require('better-sqlite3');
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const path = require("path");
@@ -8,7 +8,6 @@ const bcrypt = require('bcrypt');
 const SALT_ROUNDS = 10;
 
 const fs = require("fs");
-const { Server } = require("http");
 
 const app = express();
 const PORT = process.env.PORT || 5000;  // use Render's port if available
@@ -29,69 +28,68 @@ if (!fs.existsSync(uploadDir)) {
 app.use("/uploads", express.static(uploadDir));
 
 // Initialize DB and recreate tables on every startup (for development)
-const dbPath = path.join(Server, 'rentcalc.db');
-const db = new sqlite3.Database("./rentcalc.db", (err) => {
-  if (err) console.error("DB error:", err);
-  else console.log("Connected to DB");
-});
+const dbPath = path.join(__dirname, 'rentcalc.db');
+const db = new Database(dbPath);
+
 
 
 // Recreate tables with full schema
-db.serialize(() => {
+
   // Only create tables if they don't exist — DO NOT DROP
-  db.run(`
-    CREATE TABLE IF NOT EXISTS users (
-       id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT NOT NULL ,                -- Full Name
-  email TEXT ,                 -- Optional
-  phone TEXT,                        -- Optional
-  password TEXT NOT NULL,            -- Hashed password
-  role TEXT NOT NULL CHECK(role IN ('owner', 'tenant')),
-  owner_code TEXT UNIQUE,            -- For owners
-  linked_owner_id INTEGER,           -- For tenants
-  qr_image_url TEXT,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY(linked_owner_id) REFERENCES users(id)
-    )
-  `);
+ db.prepare(`
+  CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    email TEXT UNIQUE,
+    phone TEXT,
+    password TEXT NOT NULL,
+    role TEXT NOT NULL CHECK(role IN ('owner', 'tenant')),
+    owner_code TEXT UNIQUE,
+    linked_owner_id INTEGER,
+    qr_image_url TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(linked_owner_id) REFERENCES users(id)
+  )
+`).run();
 
-  db.run(`
-    CREATE TABLE IF NOT EXISTS rents (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER NOT NULL,
-      month TEXT NOT NULL,
-      year INTEGER NOT NULL,
-      rent REAL NOT NULL,
-      prev_unit REAL NOT NULL,
-      curr_unit REAL NOT NULL,
-      electricity_rate REAL NOT NULL,
-      water REAL NOT NULL,
-      internet INTEGER NOT NULL,
-      internet_amount REAL DEFAULT 0,
-      waste REAL NOT NULL,
-      total REAL NOT NULL,
-      previous_rent REAL DEFAULT 0,
-      paid_amount REAL DEFAULT 0,
-      remaining_amount REAL DEFAULT 0,
-      payment_status TEXT DEFAULT 'unpaid',
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY(user_id) REFERENCES users(id)
-    )
-  `);
+db.prepare(`
+  CREATE TABLE IF NOT EXISTS rents (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    month TEXT NOT NULL,
+    year INTEGER NOT NULL,
+    rent REAL NOT NULL,
+    prev_unit REAL NOT NULL,
+    curr_unit REAL NOT NULL,
+    electricity_rate REAL NOT NULL,
+    water REAL NOT NULL,
+    internet INTEGER NOT NULL,
+    internet_amount REAL DEFAULT 0,
+    waste REAL NOT NULL,
+    total REAL NOT NULL,
+    previous_rent REAL DEFAULT 0,
+    paid_amount REAL DEFAULT 0,
+    remaining_amount REAL DEFAULT 0,
+    payment_status TEXT DEFAULT 'unpaid',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(user_id) REFERENCES users(id)
+  )
+`).run();
 
-  db.run(`
-    CREATE TABLE IF NOT EXISTS notifications (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      tenant_id INTEGER NOT NULL,
-      owner_id INTEGER NOT NULL,
-      message TEXT DEFAULT 'Rent payment completed',
-      is_read BOOLEAN DEFAULT 0,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY(tenant_id) REFERENCES users(id),
-      FOREIGN KEY(owner_id) REFERENCES users(id)
-    )
-  `);
-});
+db.prepare(`
+  CREATE TABLE IF NOT EXISTS notifications (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    tenant_id INTEGER NOT NULL,
+    owner_id INTEGER NOT NULL,
+    message TEXT DEFAULT 'Rent payment completed',
+    is_read BOOLEAN DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(tenant_id) REFERENCES users(id),
+    FOREIGN KEY(owner_id) REFERENCES users(id)
+  )
+`).run();
+
+
 
 // Helper: generate 6-digit code
 const generateOwnerCode = () => Math.floor(100000 + Math.random() * 900000).toString();
